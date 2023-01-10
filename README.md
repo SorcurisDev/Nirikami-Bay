@@ -159,23 +159,25 @@ Castle work:
  - castle_outside.png
  - castlefloors_outside.png
  - castle_lightsources.png
+ 
 
-Other Sound Effects
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Memoraphile @ You're Perfect Studio
+Other Sound Effects:
+----------------------
 
-Splash Overlay
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Memoraphile @ You're Perfect Studio
 
-Licensed under the terms of the version 3.0 of the Creative Commons Attribution-Share Alike license. © 2005-2013 Julien Jorge <julien.jorge@stuff-o-matic.com>
+Splash Overlay:
+----------------------
 
-Ambient Sounds & Footsteps FX
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Licensed under the terms of the version 3.0 of the Creative Commons Attribution-Share Alike license. © 2005-2013 Julien Jorge <julien.jorge@stuff-o-matic.com>
 
-Antoinemax - https://opengameart.org/users/antoinemax
+Ambient Sounds & Footsteps FX:
+----------------------
 
-Share — copy and redistribute the material in any medium or format Adapt — remix, transform, and build upon the material for any purpose, even commercially. It would be nice if you can credit.
+- Antoinemax - https://opengameart.org/users/antoinemax
+
+- Share — copy and redistribute the material in any medium or format Adapt — remix, transform, and build upon the material for any purpose, even commercially. It would be nice if you can credit.
 
 
 
