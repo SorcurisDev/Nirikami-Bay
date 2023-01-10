@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="64" tileheight="64" infinite="0" nextlayerid="12" nextobjectid="60">
+ <tileset firstgid="1" source="../tile_sets/inside_tileset.tsx"/>
+ <tileset firstgid="193" source="../tile_sets/inside_tileset0.tsx"/>
+ <tileset firstgid="321" source="../tile_sets/inside_tileset1.tsx"/>
+ <layer id="3" name="WATER_" width="10" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="4" name="GROUND_" width="10" height="10">
+  <data encoding="csv">
+219,219,219,219,219,219,219,219,219,219,
+219,1,1,1,1,1,1,1,1,219,
+219,1,1,1,1,1,1,1,1,219,
+219,1,1,1,1,1,1,1,1,219,
+219,1,1,1,1,1,1,1,1,219,
+219,1,1,1,1,1,1,1,1,219,
+219,1,1,1,1,1,1,1,1,219,
+219,1,1,1,1,1,1,1,1,219,
+219,1,1,1,1,1,1,1,1,219,
+219,219,219,219,1,219,219,219,219,219
+</data>
+ </layer>
+ <layer id="5" name="OBJECTS_WORLD" width="10" height="10">
+  <data encoding="csv">
+0,0,379,380,0,0,0,458,0,0,
+0,0,395,396,474,475,476,0,409,0,
+0,0,0,0,0,0,0,0,425,0,
+0,0,0,0,0,0,0,0,0,0,
+0,493,0,0,0,0,0,0,0,0,
+0,493,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,493,0,
+0,0,0,0,0,0,0,493,493,0,
+0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="7" name="PLAYER_"/>
+ <objectgroup id="8" name="COLLISIONS_">
+  <object id="44" name="wall" x="513.165" y="63.8144" width="62.7169" height="129.555"/>
+  <object id="45" name="wall" x="127.959" y="59.2625" width="128.72" height="49.8961"/>
+  <object id="50" name="wall" x="519.642" y="447.222" width="56.7169" height="129.555"/>
+  <object id="51" name="wall" x="451.642" y="518.222" width="56.7169" height="59.555"/>
+  <object id="52" name="wall" x="62.6415" y="260.222" width="56.7169" height="121.555"/>
+  <object id="53" name="wall" x="47.6415" y="61.2225" width="16.7169" height="576.555"/>
+  <object id="54" name="wall" x="64.6415" y="575.722" width="176.717" height="28.555"/>
+  <object id="55" name="wall" x="342.642" y="578.722" width="116.717" height="28.555"/>
+  <object id="56" name="wall" x="577.642" y="192.722" width="16.7169" height="258.555"/>
+  <object id="57" name="wall" x="258.642" y="26.2225" width="254.717" height="38.555"/>
+  <object id="58" name="wall" x="259.64" y="65.052" width="187.72" height="24.8961"/>
+  <object id="59" name="wall" x="63.64" y="9.05195" width="62.72" height="49.8961"/>
+ </objectgroup>
+ <objectgroup id="9" name="NPC_"/>
+ <objectgroup id="10" name="SIGNS_"/>
+ <objectgroup id="11" name="DOORS_FI">
+  <object id="49" name="door_island" x="252.5" y="587" width="71" height="18"/>
+ </objectgroup>
+</map>
