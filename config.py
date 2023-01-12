@@ -41,10 +41,28 @@ ITEM_SELL = {
     "High Up": (200,"Make your fish sell better!")
 }
 
+OPTIONS = [
+    "Help",
+    "Credits",
+    "Dev Website"
+]
+
+#Name, Power, Classification
+RODS = {
+    "Woodenpoli": ("Woodenpoli",50,"Rod")
+}
+FISHES = {
+    "Normal Fish": ("Normal Fish",10,"Fish")
+}
+
 #FISH SELLING MECHANISM AND PROPERTIES
-FISH_PRICE = 10
+FISH_MULTIPLIER = 1
 
 Buttons_Temp = []
+
+Shop_Items = []
+Option_Items = []
+Inv_Items = []
 
 DIA_XY = (0, 415)
 DIATXT_XY = (DIA_XY[0]+15, DIA_XY[1]+10)

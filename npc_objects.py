@@ -10,7 +10,6 @@ class Serafina():
         self.atts = all_props
         self.atts.update = self.update
         self.atts.animate = self.animate
-        self.fishprice = FISH_PRICE
 
     def update(self):
         if not self.atts.dontAnimate:
@@ -26,24 +25,42 @@ class Serafina():
 
     def interact(self):
         if not self.atts.game.saying:
-            self.atts.game.saying = True
-            self.fishprice = FISH_PRICE
+            self.fishtosell = 0
+            self.fishEarnings = 0
 
-            if not self.atts.game.player.total_fish_caught:
+            if self.atts.game.player.total_fish_caught == 0:
                 self.atts.game.saying_cont = "You don't have fish to sell!"
+                self.atts.game.saying = True
             else:
-                allfish = self.atts.game.player.total_fish_caught
-                earnings = allfish * self.fishprice
-                self.atts.game.saying_cont = "Thank you! you've sold your fish for: "+str(earnings)+" gold."
+                for i in range(self.atts.game.player.total_fish_caught):
+                    for items in self.atts.game.player.inventory:
+                        toRem = None
+                        if items[2] == "Fish":
+                            for itm in Inv_Items:
+                                if itm.text == items[0]:
+                                    toRem = itm
+                                    break
+
+                            mx = FISH_MULTIPLIER * items[1]
+                            self.fishEarnings += mx
+                            self.atts.game.player.inventory.remove(items)
+                            Inv_Items.remove(toRem)
+                            break
 
                 #Play coin sound as per how many fish were sold
                 #self.atts.game.channel3.play(self.atts.game.cashout, allfish-1)
 
                 #Play coin sound once per sell
-                self.atts.game.channel3.play(self.atts.game.cashout)
 
+                self.atts.game.channel3.play(self.atts.game.cashout)
                 self.atts.game.player.total_fish_caught = 0
-                self.atts.game.player.money += earnings
+                self.atts.game.player.money += self.fishEarnings
+
+                self.atts.game.saying_cont = "Thank you! you've sold your fish for: "+str(self.fishEarnings)+" gold."
+                self.atts.game.saying = True
+
+                self.fishEarnings = 0
+                self.fishtosell = 0
 
 class Taiya():
     def __init__(self, all_props):
@@ -83,19 +100,10 @@ class Reno():
         self.atts.image = self.atts.game.ani_get(self.atts.animation_loop, 2,0, self.atts.width, self.atts.height, self.atts.object_sheet)
         if self.atts.animation_loop >= 3:
             self.atts.animation_loop = 0
+            
     def interact(self):
-        self.atts.game.shop_on = True
-
-class Sign():
-    def __init__(self, all_props):
-        self.atts = all_props
-        self.atts.update = self.update
-    def update(self):
-        self.atts.image = self.atts.game.blankCase
-    def interact(self):
-        if not self.atts.game.saying:
-            self.atts.game.saying = True
-            self.atts.game.saying_cont = SIGN_CONTS[self.atts.nameOf]
+        self.atts.game.menu_box_on = True
+        self.atts.game.menu_to_list = Shop_Items
 
 class item_Functions():
     def __init__(self, game):
@@ -122,8 +130,8 @@ class item_Functions():
         self.game.saying = True
 
     def highup(self):
-        global FISH_PRICE
-        FISH_PRICE += 10
+        global FISH_MULTIPLIER
+        FISH_MULTIPLIER = 2
         self.game.player.money -= 200
-        self.game.saying_cont = "The prices of fish went up by 10!"
+        self.game.saying_cont = "The prices of fish went up!"
         self.game.saying = True

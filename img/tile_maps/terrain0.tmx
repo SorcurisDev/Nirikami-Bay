@@ -3,20 +3,6 @@
  <tileset firstgid="1" source="../tile_sets/inside_tileset.tsx"/>
  <tileset firstgid="193" source="../tile_sets/inside_tileset0.tsx"/>
  <tileset firstgid="321" source="../tile_sets/inside_tileset1.tsx"/>
- <layer id="3" name="WATER_" width="10" height="10">
-  <data encoding="csv">
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0
-</data>
- </layer>
  <layer id="4" name="GROUND_" width="10" height="10">
   <data encoding="csv">
 219,219,219,219,219,219,219,219,219,219,
@@ -45,7 +31,6 @@
 0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="7" name="PLAYER_"/>
  <objectgroup id="8" name="COLLISIONS_">
   <object id="44" name="wall" x="513.165" y="63.8144" width="62.7169" height="129.555"/>
   <object id="45" name="wall" x="127.959" y="59.2625" width="128.72" height="49.8961"/>

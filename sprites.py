@@ -16,18 +16,14 @@ class spriteSheet:
         return sprite
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game):
         self.game = game
         self._layer = PLAYER_LAYER
-        self.groups = self.game.all_sprites
-        pygame.sprite.Sprite.__init__(self,self.groups)
 
         self.total_fish_caught = 0
-        self.money = 900
+        self.money = 1000
         self.name = "Player"
 
-        self.x = x
-        self.y = y
         self.width = TILE_SIZE
         self.height = TILE_SIZE
 
@@ -37,7 +33,7 @@ class Player(pygame.sprite.Sprite):
         self.facing = 'down'
         self.animation_loop = 0
 
-        self.image = self.game.character_spritesheet.get_sprite(1,1, self.width, self.height)
+        self.image = self.game.get_idle(1,1, self.width, self.height, self.game.character_spritesheet)
 
         self.rect = self.image.get_rect()
         self.rect.x = WIN_WIDTH/2 - 32
@@ -47,6 +43,22 @@ class Player(pygame.sprite.Sprite):
         self.door_switch = True
         self.grace_away = 0
 
+        self.groups = self.game.all_sprites
+        pygame.sprite.Sprite.__init__(self,self.groups)
+
+        #Player IN-GAME statuse
+        self.rod_using = "Woodenpoli"
+        self.rod_power = RODS[self.rod_using][1]
+
+        self.inventory = []
+
+    def insert_Inventory(self, item):
+        for items in RODS:
+            if item == RODS[items][0]:
+                self.inventory.append(RODS[items])
+        for items in FISHES:
+            if item == FISHES[items][0]:
+                self.inventory.append(FISHES[items])
 
     def update(self):
         self.movement()
@@ -72,8 +84,8 @@ class Player(pygame.sprite.Sprite):
             self.grace_away = 0
 
         keys = pygame.key.get_pressed()
-        if not self.game.act_inplay:
-            if keys[pygame.K_LEFT]:
+        if not self.game.act_inplay and not self.game.catch_fish and not self.game.on_interacting:
+            if keys[pygame.K_LEFT]: 
                 for sprite in self.game.all_sprites:
                     if sprite.map_parent == self.game.currMap:
                         sprite.rect.x += PLAYER_SPEED
@@ -122,7 +134,7 @@ class Player(pygame.sprite.Sprite):
             hits = pygame.sprite.spritecollide(self, self.game.doors, False)
             if hits:
                 self.door_switch = False
-                self.game.currMap = DOOR_NAMES[hits[0].tile_id]
+                self.game.currMap = DOOR_NAMES[hits[0].doorname]
 
     def collide_blocks(self, direction):
         if direction == "x":
@@ -198,36 +210,29 @@ class Player(pygame.sprite.Sprite):
                 if not self.game.channel2.get_busy():
                     self.game.channel2.play(self.game.footsteps)
 
-class Enemy(pygame.sprite.Sprite):
-        fish_population = 0
-        def __init__(self, game, x, y, map=None):
+class Fish(pygame.sprite.Sprite):
+        def __init__(self, game, x, y, map):
             self.game = game
             self._layer = ENEMY_LAYER
             self.map_parent = map
-            self.groups = self.game.all_sprites, self.game.enemies
-            pygame.sprite.Sprite.__init__(self, self.groups)
 
-            
-            self.x = x
-            self.y = y
             self.width = TILE_SIZE
             self.height = TILE_SIZE
+
+            self.image = self.game.get_idle(0,0, self.width, self.height, self.game.fish_spritesheet)
+
+            self.rect = self.image.get_rect()
+            self.rect.x = math.floor(x)
+            self.rect.y = math.floor(y)
+
+            self.groups = self.game.all_sprites, self.game.enemies
+            pygame.sprite.Sprite.__init__(self, self.groups)
 
             self.animation_loop = 0
             self.respawn_loop = 0
             self.caught = False
             self.respawn_interval = random.randint(RESPAWN_INTERVALS[0], RESPAWN_INTERVALS[1])
             self.dontAnimate = False
-
-            self.image = self.game.enemy_spritesheet.get_sprite(0,0, self.width, self.height)
-            #self.image.set_colorkey(BLACK)
-
-            self.rect = self.image.get_rect()
-            self.rect.x = self.x
-            self.rect.y = self.y
-
-            Enemy.fish_population += 1
-            self.game.hitFlag = False
 
         def update(self):
             if not self.caught:
@@ -258,34 +263,27 @@ class Enemy(pygame.sprite.Sprite):
 
         def animate(self):
         
-            self.image = self.game.ani_get(self.animation_loop, 15, 0, self.width, self.height, self.game.enemy_spritesheet)
+            self.image = self.game.ani_get(self.animation_loop, 15, 0, self.width, self.height, self.game.fish_spritesheet)
             self.animation_loop += 0.1
             if self.animation_loop >= 16:
                 self.animation_loop = 0
 
 class Door(pygame.sprite.Sprite):
-    def __init__(self, game, x, y, tile_id, rectWidth, rectHeight, map):
+    def __init__(self, game, x, y, name, width, height, map):
         self.game = game
-        self.x = math.floor(x)
-        self.y = math.floor(y)
-        self.width = TILE_SIZE
-        self.height = TILE_SIZE
-        self.tile_id = tile_id
-        self.rectWidth = rectWidth
-        self.rectHeight = rectHeight
+        self.doorname = name
         self.map_parent = map
-
         self._layer = DOORS_LAYER
-
-        self.groups = self.game.all_sprites, self.game.doors
-        pygame.sprite.Sprite.__init__(self, self.groups)
 
         self.image = self.game.blankCase
         self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
-        self.rect.width = self.rectWidth
-        self.rect.height = self.rectHeight
+        self.rect.x = math.floor(x)
+        self.rect.y = math.floor(y)
+        self.rect.width = width
+        self.rect.height = height
+
+        self.groups = self.game.all_sprites, self.game.doors
+        pygame.sprite.Sprite.__init__(self, self.groups)
 
     def update(self):
         self.checkIfExists()
@@ -300,43 +298,27 @@ class Door(pygame.sprite.Sprite):
             if self in check_sprites:
                 self.game.doors.remove(self)
 
-class Ground(pygame.sprite.Sprite):
-    def __init__(self, game, x, y, img=None, tile_id=None, rectWidth=None, rectHeight=None, map=None, tag=None, par=None):
+class Collision_Boxes(pygame.sprite.Sprite):
+    def __init__(self, game, x, y, image, width, height, map):
         self.game = game
-        self.tile_id = tile_id
-        self._layer = GROUND_LAYER
-        self.rectWidth = rectWidth
-        self.rectHeight = rectHeight
+        self.image = image
         self.map_parent = map
-        self.backup_img = img
-        self.image = img
-        self.tag = tag
-        self.parent = par
-
-        if self.image == None:
-            self.image = self.game.blankCase
+        self._layer = GROUND_LAYER
+        
         self.image.set_colorkey(BLACK)
 
-        if self.tile_id == "collision":
-            self.groups = self.game.all_sprites, self.game.blocks
-        else: 
-            self.groups = self.game.all_sprites
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+        self.rect.width = math.floor(width)
+        self.rect.height = math.floor(height)
+
+        self.groups = self.game.all_sprites, self.game.blocks
         pygame.sprite.Sprite.__init__(self, self.groups)
 
-        self.x = x 
-        self.y = y
-        self.width = TILE_SIZE
-        self.height = TILE_SIZE
-
-        self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
-        if self.tile_id == "collision":
-            self.rect.width = math.floor(self.rectWidth)
-            self.rect.height = math.floor(self.rectHeight)
     def update(self):
-        if self.tile_id == "collision":
-            self.checkIfExists()
+        self.checkIfExists()
 
     def checkIfExists(self):
         map_remained = self.game.currMap
@@ -348,20 +330,162 @@ class Ground(pygame.sprite.Sprite):
             if self in check_sprites:
                 self.game.blocks.remove(self)
 
-class Button:
-    def __init__(self, game, x, y, width, height, fg, bg, content, itemContent=None, itemPrice=None):
+
+class Ground(pygame.sprite.Sprite):
+    def __init__(self, game, x, y, img, map):
+        self.game = game
+        self._layer = GROUND_LAYER
+        self.map_parent = map
+        self.backup_img = img
+        self.image = img
+
+        self.image.set_colorkey(BLACK)
+
+        self.groups = self.game.all_sprites
+        pygame.sprite.Sprite.__init__(self, self.groups)
+
+        self.rect = self.image.get_rect()
+        self.rect.x = x * TILE_SIZE
+        self.rect.y = y * TILE_SIZE
+
+class Inventory():
+    def __init__(self, game, text):
+        self.game = game
+        self.text = text
+        self.font = pygame.font.Font('img/sdv.ttf', 25)
+
+        self.diaSwitch = False
+        self.diaSwitchPressed = False
+
+        self.fg = BLACK
+
+        self.imgBended = pygame.transform.scale(self.game.dialog_box, (600, 35))
+
+        self.image = self.imgBended
+        self.rect = self.image.get_rect()
+
+        self.content = self.font.render(self.text, True, self.fg)
+        TempCo = self.rect.x+25
+        self.content_rect = self.content.get_rect(x=TempCo, y=5)
+        self.image.blit(self.content, self.content_rect)
+
+        Inv_Items.append(self)
+        self.game.player.insert_Inventory(self.text)
+
+    def function(self):
+        pass
+
+    def is_pressed(self, pos, pressed):
+        if self.rect.collidepoint(pos):
+            if pressed[0]:
+                return True
+            return False
+        return False
+
+class Option():
+    def __init__(self, game, text):
+        self.game = game
+        self.text = text
+        self.font = pygame.font.Font('img/sdv.ttf', 25)
+
+        self.diaSwitch = False
+        self.diaSwitchPressed = False
+
+        self.fg = BLACK
+
+        self.imgBended = pygame.transform.scale(self.game.dialog_box, (600, 35))
+
+        self.image = self.imgBended
+        self.rect = self.image.get_rect()
+
+        self.content = self.font.render(self.text, True, self.fg)
+        TempCo = self.rect.x+25
+        self.content_rect = self.content.get_rect(x=TempCo, y=5)
+        self.image.blit(self.content, self.content_rect)
+
+        Option_Items.append(self)
+    
+    def function(self):
+        if self.text == "Help":
+            self.game.saying_cont = "Help provided"
+            self.game.saying = True
+        if self.text == "Credits":
+            self.game.saying_cont = "Of course that's sorcuris"
+            self.game.saying = True
+        if self.text == "Dev Website":
+            self.game.saying_cont = "Wala pa paps"
+            self.game.saying = True
+
+
+    def is_pressed(self, pos, pressed):
+        if self.rect.collidepoint(pos):
+            if pressed[0]:
+                return True
+            return False
+        return False
+
+class ShopList():
+    def __init__(self, game, text, itemCont, itemPrice):
+        self.game = game
+        self.text = text
+        self.itemCont = itemCont
+        self.itemPrice = itemPrice
+        self.font = pygame.font.Font('img/sdv.ttf', 25)
+
+        self.diaSwitch = False
+        self.diaSwitchPressed = False
+
+        self.fg = BLACK
+
+        self.imgBended = pygame.transform.scale(self.game.dialog_box, (600, 35))
+
+        self.image = self.imgBended
+        self.rect = self.image.get_rect()
+
+        self.content = self.font.render(self.text, True, self.fg)
+        TempCo = self.rect.x+25
+        self.content_rect = self.content.get_rect(x=TempCo, y=5)
+        self.image.blit(self.content, self.content_rect)
+
+        Shop_Items.append(self)
+    
+    def function(self):
+        self.game.itemAccess.fetchFunc(self.itemCont, self.game.player.money, self.itemPrice)
+
+    def update(self):
+        pass
+
+    def is_pressed(self, pos, pressed):
+       if not self.itemCont == None:
+            if not self.diaSwitchPressed:
+                if self.rect.collidepoint(pos):
+                    self.diaSwitch = True
+                    self.game.saying_cont = ITEM_SELL[self.itemCont][1]
+                    self.game.saying = True
+                else:
+                    if self.diaSwitch:
+                        self.diaSwitch = False
+                        self.game.saying = False
+
+            if self.rect.collidepoint(pos):
+                if pressed[0]:
+                    self.diaSwitchPressed = True
+                    return True
+                if not pressed[0]:
+                    if not self.game.saying:
+                        self.diaSwitchPressed = False
+                    if not self.itemCont == None:
+                        self.game.itemAccess.switch = True
+                return False
+            return False
+
+class Button(pygame.sprite.Sprite):
+    def __init__(self, game, x, y, content):
         self.font = pygame.font.Font('img/sdv.ttf', 25)
 
         self.game = game
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
         self.content = content
-        self.itemContent = itemContent
-        self.itemPrice = itemPrice
 
-        self.atClicked = False
         self.diaSwitch = False
         self.diaSwitchPressed = False
 
@@ -370,45 +494,42 @@ class Button:
         wH = 25 * len(self.content) 
         if wH >= WIN_WIDTH+10:
             wH -= WIN_WIDTH/2
-        self.imgBended = pygame.transform.scale(self.game.dialog_box, (wH+11, 35))
+        self.imgBended = pygame.transform.scale(self.game.dialog_box, (111, 35))
 
         self.image = self.imgBended
         self.rect = self.image.get_rect()
 
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.x = x
+        self.rect.y = y
 
         self.text = self.font.render(self.content, True, self.fg)
-        if self.content == "Play" or self.content == "Close":
-            TempCo = wH/2-15
-        else:
-            TempCo = 10
+        TempCo = 5
         self.text_rect = self.text.get_rect(x=TempCo, y=5)
         self.image.blit(self.text, self.text_rect)
 
         Buttons_Temp.append(self)
     
-    def is_pressed(self, pos, pressed):
-        if not self.itemContent == None:
-            if not self.diaSwitchPressed:
-                if self.rect.collidepoint(pos):
-                    self.diaSwitch = True
-                    self.game.saying_cont = ITEM_SELL[self.itemContent][1]
-                    self.game.saying = True
-                else:
-                    if self.diaSwitch:
-                        self.diaSwitch = False
-                        self.game.saying = False
+    def update(self):
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pressed = pygame.mouse.get_pressed()
+        
+        if self.is_pressed(mouse_pos, mouse_pressed):
 
+            #Code here every UI Button function
+            if self.content == "Close":
+                self.game.menu_box_on = False
+            if self.content == "Menu":
+                self.game.menu_box_on = True
+                self.game.menu_to_list = Option_Items
+            if self.content == "Inventory":
+                self.game.menu_box_on = True
+                self.game.menu_to_list = Inv_Items
+
+
+    def is_pressed(self, pos, pressed):
         if self.rect.collidepoint(pos):
             if pressed[0]:
-                self.diaSwitchPressed = True
                 return True
-            if not pressed[0]:
-                if not self.game.saying:
-                    self.diaSwitchPressed = False
-                if not self.itemContent == None:
-                    self.game.itemAccess.switch = True
             return False
         return False
     
@@ -417,21 +538,23 @@ class Text(pygame.sprite.Sprite):
     def __init__(self, game, x, y, content, content_chg=None):
         self.game = game
         self.content_chg = content_chg
-        self.x = x
-        self.y = y
         self._layer = TEXTS_LAYER
         self.content = content
+
+        self.font = pygame.font.Font('img/sdv.ttf', 25)
+
+        self.image = self.font.render(self.content, True, BLACK)
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x
+        self.rect.y = y
 
         self.groups = self.game.textOthers
         pygame.sprite.Sprite.__init__(self, self.groups)
 
     def update(self):
 
-        self.image = self.game.font.render(self.content, True, BLACK)
-        self.rect = self.image.get_rect()
-
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.image = self.font.render(self.content, True, BLACK)
         
         if self.content_chg == "Fishpoints":
             tpc = "Fish Caught: " +str(self.game.player.total_fish_caught)
@@ -443,34 +566,33 @@ class Text(pygame.sprite.Sprite):
 class Attack(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
         self.game = game
-
         self._layer = PLAYER_LAYER
         self.game.act_inplay = True
+        self.width = TILE_SIZE
+        self.height = TILE_SIZE
+        self.image = self.game.get_idle(0,0, self.width, self.height, self.game.attack_spritesheet)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
         self.groups = self.game.all_sprites, self.game.attacks
         pygame.sprite.Sprite.__init__(self, self.groups)
 
-        self.x = x
-        self.y = y
-        self.width = TILE_SIZE
-        self.height = TILE_SIZE
-
         self.animation_loop = 0
-        self.image = self.game.attack_spritesheet.get_sprite(0,0, self.width, self.height)
-        self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
 
     def update(self):
         self.animate()
         self.collide()
 
     def collide(self):
-        hits = pygame.sprite.spritecollide(self, self.game.enemies, False)
-        if hits:
-            hits[0].caught = True
-            self.game.fishout.play()
-            self.game.player.total_fish_caught += self.game.fishCaught
-            self.game.enemies.remove(hits[0])
+        if not self.game.catch_fish:
+            hits = pygame.sprite.spritecollide(self, self.game.enemies, False)
+            if hits:
+                self.game.bar_height[0][1] = WIN_HEIGHT-105
+                self.game.bar_height[1][1] = WIN_HEIGHT-105
+                self.game.catch_fish = True
+                self.game.fish_on_line = hits[0]
+
     def animate(self):
         direction = self.game.player.facing
 
@@ -499,19 +621,36 @@ class Attack(pygame.sprite.Sprite):
                 self.kill()
                 self.game.act_inplay = False
 
-class Npc(pygame.sprite.Sprite):
-    def __init__(self, game, x, y, nameOf, width, height, layerGet=None, map=None):
+class Sign(pygame.sprite.Sprite):
+    def __init__(self, game, x, y, img, width, height, name, map):
         self.game = game
-        self.x = x
-        self.y = y
+        self.name = name
+        self.map_parent = map
+        self.image = img
+
+        self.rect = self.image.get_rect()
+        self.rect.x = math.floor(x)
+        self.rect.y = math.floor(y)
+        self.rect.width = math.floor(width)
+        self.rect.height = math.floor(height)
+
+        self.groups = self.game.all_sprites, self.game.blocks
+        pygame.sprite.Sprite.__init__(self, self.groups)
+        
+    def interact(self):
+        if not self.game.saying:
+            self.game.saying = True
+            self.game.saying_cont = SIGN_CONTS[self.name]
+
+class Npc(pygame.sprite.Sprite):
+    def __init__(self, game, x, y, nameOf, map):
+        self.game = game
         self._layer = NPC_LAYER
+        self.nameOf = nameOf
+        self.map_parent = map
+
         self.width = TILE_SIZE
         self.height = TILE_SIZE
-        self.rectWidth = width
-        self.rectHeight = height
-        self.nameOf = nameOf
-        self.layerGet = layerGet
-        self.map_parent = map
 
         self.groups = self.game.all_sprites, self.game.blocks
         pygame.sprite.Sprite.__init__(self, self.groups)
@@ -529,14 +668,11 @@ class Npc(pygame.sprite.Sprite):
             self.object_sheet = self.game.reno
             self.image = self.game.get_idle(0, 1, self.width, self.height, self.object_sheet)
 
-        if self.layerGet == "SIGNS_":
-            self.image = self.game.blankCase
-
         self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
-        self.rect.width = TILE_SIZE 
-        self.rect.height = TILE_SIZE
+        self.rect.x = math.floor(x)
+        self.rect.y = math.floor(y)
+        self.rect.width = self.width
+        self.rect.height = self.height
 
         if self.nameOf == "serafina":
             self.object_created = Serafina(self)
@@ -544,8 +680,6 @@ class Npc(pygame.sprite.Sprite):
             self.object_created = Taiya(self)
         if self.nameOf == "reno":
             self.object_created = Reno(self)
-        if self.layerGet == "SIGNS_":
-            self.object_created = Sign(self)
 
     def checkIfExists(self):
         map_remained = self.game.currMap
@@ -562,8 +696,6 @@ class Npc(pygame.sprite.Sprite):
 class Backdrop(pygame.sprite.Sprite):
     def __init__(self, game, x, y, width, height):
         self.game = game
-        self.x = x
-        self.y = y
         self.width = width
         self.height = height
         self.map_parent = self.game.currMap
@@ -572,13 +704,13 @@ class Backdrop(pygame.sprite.Sprite):
         self.image = self.game.get_idle(0,0, self.width, self.height, self.game.water)
 
         self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
-
-        self.animation_loop = 0
+        self.rect.x = x
+        self.rect.y = y
 
         self.groups = self.game.background_plate
         pygame.sprite.Sprite.__init__(self, self.groups)
+
+        self.animation_loop = 0
 
     def update(self):
         self.animate()
